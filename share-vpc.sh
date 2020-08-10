@@ -161,7 +161,7 @@ gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
     --filter="bindings.role=( 'roles/owner' OR 'roles/editor' OR 'roles/compute.networkAdmin' OR 'roles/compute.instanceAdmin')" \
     --format table"(bindings.role,bindings.members)" | grep @ | awk '{ print $2 }' | while read MEMBER 
         do
-            echo "Adding $MEMBER as  compute.networkUser"
+            echo "Adding $MEMBER as compute.networkUser"
             gcloud beta compute networks subnets add-iam-policy-binding $SUBNET \
                 --region=$REGION --member=$MEMBER --role='roles/compute.networkUser'
                 if [ $? -ne 0 ]; then
