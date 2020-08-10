@@ -12,7 +12,8 @@ Always make sure you have backups and have **validated** recovery from those bac
 * Make sure you know the host project id, child project id , and finally the network and subnet you wish to share.  
 * Clone the repository, and make sure you install the Google cloud SDK (or, just run the script from CloudShell).
 * If running outside of cloud shell, authenticate by running "gcloud auth login" 
-* Use format: ./vpc-share.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>
+* Use format: 
+    - `./vpc-share.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>`
 
 ### Required options
 * **-h <host project>**: This is the project ID of the host project, which will share its networks and subnets with other child projects"
