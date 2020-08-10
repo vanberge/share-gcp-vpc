@@ -49,7 +49,7 @@ fi
 # Shows help function and instructions if errors are found
 SHOW_HELP() {
     echo "NETWORK SHARE SCRIPT HELP"
-    echo "  Use format ./vpc-share.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>"
+    echo "  Use format ./share-vpc.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>"
     echo "      <host project>: This is the project ID of the host project, which will share its networks and subnets with other child projects"
     echo "      <child project>: Project ID of the child project, who will create resources in the parent project's network and subnets"
     echo "      <network to share>: Name of the network in the host project that will be shared"
