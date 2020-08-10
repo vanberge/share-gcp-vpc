@@ -4,7 +4,7 @@ share-vpc.sh is a script developed to help automate the sharing of VPC networks 
 
 ## Disclaimer
 
-This migration tool is provided without any warranty, make sure you review the script code and test accordingly with your requirements.
+This tool is provided without any warranty, make sure you review the script code and test accordingly with your requirements.
 Always make sure you have backups and have **validated** recovery from those backups before running, especially in production environments. 
 
 ## Getting Started
@@ -13,7 +13,7 @@ Always make sure you have backups and have **validated** recovery from those bac
 * Clone the repository, and make sure you install the Google cloud SDK (or, just run the script from CloudShell).
 * If running outside of cloud shell, authenticate by running "gcloud auth login" 
 * Use format: 
-    - `./vpc-share.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>`
+    - `./share-vpc.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>`
 
 ### Required options
 * **-h `<host project>`**: This is the project ID of the host project, which will share its networks and subnets with other child projects"
@@ -23,7 +23,7 @@ Always make sure you have backups and have **validated** recovery from those bac
 
 ## Examples:
 ```
-./vpc-share.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
+./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
    - This share the subnet 'app-project-subnet' with the my-app-project, allowing resources to connect to the shared-vpc-network
 ```
 

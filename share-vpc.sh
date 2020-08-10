@@ -56,7 +56,7 @@ SHOW_HELP() {
     echo "      <subnet to share>: The specific subnet name you wish to share"
     echo " "
     echo "  Examples:"
-    echo "      ./vpc-share.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
+    echo "      ./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
 }
 
 # Make sure the user entered the correct # of args.  Merge into one function to do all validation in one function
