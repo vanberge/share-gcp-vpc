@@ -16,10 +16,10 @@ Always make sure you have backups and have **validated** recovery from those bac
     - `./vpc-share.sh -h <host project> -c <child project> -n <network to share> -s <subnet to share>`
 
 ### Required options
-* **-h <host project>**: This is the project ID of the host project, which will share its networks and subnets with other child projects"
-* **-c <child project>**: Project ID of the child project, who will create resources in the parent project's network and subnets"
-* **-n <network to share>**: Name of the network in the host project that will be shared"
-* **-s <subnet to share>**: The specific subnet name you wish to share"
+* **-h `<host project>`**: This is the project ID of the host project, which will share its networks and subnets with other child projects"
+* **-c `<child project>`**: Project ID of the child project, who will create resources in the parent project's network and subnets"
+* **-n `<network to share>`**: Name of the network in the host project that will be shared"
+* **-s `<subnet to share>`**: The specific subnet name you wish to share"
 
 ## Examples:
 ```
