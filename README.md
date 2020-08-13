@@ -28,8 +28,7 @@ Always make sure you have backups and have **validated** recovery from those bac
 ```
 
 ### Authors
-* **Eric VanBergen** - Initial work - [Github](https://github.com/vanberge)
-
+* **Eric VanBergen** - [Github](https://github.com/vanberge) - [Personal](https://www.ericvb.com)
 
 ### License
 This project is licensed under the Apache 2 License - see the [LICENSE.md](LICENSE.md) file for details

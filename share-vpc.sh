@@ -33,12 +33,13 @@ ERROR_OUT() {
 if [[ ${#} -eq 0 ]]; then
     ERROR_OUT
 else
-    while getopts "h:c:n:s:" OPTION; do
+    while getopts "h:c:n:s:k" OPTION; do
         case $OPTION in
             h) HOSTPROJECT_ID=${OPTARG};;
             c) CHILDPROJECT_ID=${OPTARG};;
             n) NETWORK=${OPTARG};;
             s) SUBNET=${OPTARG};;
+            k) K8S=1;;
             \?) ERRORMSG="Unknown option: -$OPTARG";ERROR_OUT;;
             :) ERRORMSG="Missing option argument for -$OPTARG.";ERROR_OUT;;
             *) ERRORMSG="Unimplemented option: -$OPTARG";ERROR_OUT;;
@@ -170,6 +171,24 @@ gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
                     ERRORMSG="failed to add one or more members to IAM policy binding on $SUBNET"
                 fi
         done
+
+        #Handle K8s Service Account if -k
+        if [ $K8S -ne 0 ]; then
+            echo "-k wasdetected, enabling Kubernetes access to shared VPC..."
+            
+            gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \ #get k8s service account
+                --filter="bindings.role=( 'roles/container.serviceagent' )" \
+                --format table"(bindings.role,bindings.members)" | grep @ | awk '{ print $2 }' | while read K8SACCT
+                do
+                    #gcloud beta compute networks subnets add-iam-policy-binding $SUBNET \
+                    #    --region=$REGION --member=$K8SACCT --role='roles/compute.networkUser'
+                    if [ $? -ne 0 ]; then
+                        echo "Failed to add user $K8SACCT"
+                        ERROR=1 
+                        ERRORMSG="failed to add one or more members to IAM policy binding on $SUBNET"
+                    fi
+                done
+        fi
 
 #Done, so check error level and error out if so
 ERROR_OUT
