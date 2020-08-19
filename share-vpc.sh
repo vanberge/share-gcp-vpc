@@ -121,6 +121,18 @@ echo "Validated command arguments... Will share subnet $SUBNET, in network $NETW
 read -p "Press enter to continue, or ctrl-c to abort!" </dev/tty
 
 echo "Continuing..."
+echo "Checking if we are already in the project..."
+CURRENTPROJECT=$(gcloud config list project | grep project | awk ' { print $3 } ')
+if [ "$CURRENTPROJECT" != "$HOSTPROJECT_ID" ]; then
+    gcloud config set project $HOSTPROJECT_ID
+    if [ $? -ne 0 ]; then
+        echo "Could not set project to $HOSTPROJECT_ID, exiting"
+        ERROR_OUT
+        exit
+    fi
+    else
+        echo "Already in $HOSTPROJECT_ID, continuing!"
+fi
 echo "Getting Region of subnet $SUBNET"
 REGION=$(gcloud compute networks subnets list | grep $SUBNET | awk '{ print $2 }')
     if [ $? -ne 0 ]; then
@@ -175,7 +187,6 @@ gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
         #Handle K8s Service Account if -k
         if [ $K8S -ne 0 ]; then
             echo "-k wasdetected, enabling Kubernetes access to shared VPC..."
-            
             gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \ #get k8s service account
                 --filter="bindings.role=( 'roles/container.serviceagent' )" \
                 --format table"(bindings.role,bindings.members)" | grep @ | awk '{ print $2 }' | while read K8SACCT
