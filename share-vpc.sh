@@ -13,7 +13,9 @@
 # limitations under the License.
 
 # Set up some functions, initialize vars
+SAFEMODE=1
 ALREADYHOST=1
+K8S=0
 COUNT=0
 ERROR=0
 ERRORMSG="OK"
@@ -33,13 +35,14 @@ ERROR_OUT() {
 if [[ ${#} -eq 0 ]]; then
     ERROR_OUT
 else
-    while getopts "h:c:n:s:k" OPTION; do
+    while getopts "h:c:n:s:kz" OPTION; do
         case $OPTION in
             h) HOSTPROJECT_ID=${OPTARG};;
             c) CHILDPROJECT_ID=${OPTARG};;
             n) NETWORK=${OPTARG};;
             s) SUBNET=${OPTARG};;
             k) K8S=1;;
+            z) SAFEMODE=0;;
             \?) ERRORMSG="Unknown option: -$OPTARG";ERROR_OUT;;
             :) ERRORMSG="Missing option argument for -$OPTARG.";ERROR_OUT;;
             *) ERRORMSG="Unimplemented option: -$OPTARG";ERROR_OUT;;
@@ -94,36 +97,15 @@ CHECK_NETWORK() {
         if [ $? -ne 0 ]; then
             ERROR=1 
             ERRORMSG="ERRORS FOUND IN ARGUMENTS - Subnet '$SUBNET' not found, please check subnet name"
-        fi
-    
-    echo "Checking if $HOSTPROJECT_ID is already a shared VPC host project..."
-    gcloud compute shared-vpc list-associated-resources $HOSTPROJECT_ID > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-	        echo "NOTE:"
-            echo "$HOSTPROJECT_ID is not currently a shared project"
-            echo "To continue, $HOSTPROJECT_ID will be set to shared VPC host. If this is not desired, press ctrl-c to abort!"
-            ALREADYHOST=0
-            else
-                echo "$HOSTPROJECT_ID is already a shared VPC host, continuing..."   
-        fi
-
-    ERROR_OUT #error out if there are any issues
+            ERROR_OUT #error out if there are any issues
+        fi 
 }
 
-#Verify all the things before proceeding!
-COUNT_ARGS
-CHECK_PROJECT "$HOSTPROJECT_ID" 
-CHECK_PROJECT "$CHILDPROJECT_ID" 
-CHECK_NETWORK 
-
-#Now we can start!
-echo "Validated command arguments... Will share subnet $SUBNET, in network $NETWORK from host project $HOSTPROJECT_ID with $CHILDPROJECT_ID..."
-read -p "Press enter to continue, or ctrl-c to abort!" </dev/tty
-
-echo "Continuing..."
+#Check that we're in the correct project to have CLI work appropriately.
 echo "Checking if we are already in the project..."
 CURRENTPROJECT=$(gcloud config list project | grep project | awk ' { print $3 } ')
 if [ "$CURRENTPROJECT" != "$HOSTPROJECT_ID" ]; then
+    echo "Setting $HOSTPROJECT_ID as current project"
     gcloud config set project $HOSTPROJECT_ID
     if [ $? -ne 0 ]; then
         echo "Could not set project to $HOSTPROJECT_ID, exiting"
@@ -133,6 +115,36 @@ if [ "$CURRENTPROJECT" != "$HOSTPROJECT_ID" ]; then
     else
         echo "Already in $HOSTPROJECT_ID, continuing!"
 fi
+
+#Verify all the things before proceeding!
+if [ $SAFEMODE -ne 0 ]; then
+    echo "Running pre-flight checks..."
+    COUNT_ARGS
+    CHECK_PROJECT "$HOSTPROJECT_ID" 
+    CHECK_PROJECT "$CHILDPROJECT_ID" 
+    CHECK_NETWORK 
+    echo "Validated command arguments..."
+    else 
+        echo "-z detected: Safe mode disabled, proceeding without pre-flight checks..."
+fi
+
+#Enable shared project host if not already
+echo "Checking if $HOSTPROJECT_ID is already a shared VPC host project..."
+gcloud compute shared-vpc list-associated-resources $HOSTPROJECT_ID > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "$HOSTPROJECT_ID is not currently a shared project"
+        echo "To continue, $HOSTPROJECT_ID must be set to shared VPC host. If this is not desired, abort when prompted..."
+        ALREADYHOST=0
+        else
+            echo "$HOSTPROJECT_ID is already a shared VPC host, continuing..."   
+    fi
+
+#Now we can start!
+echo ""
+echo -e "Confirm: sharing subnet \e[32m$SUBNET\e[0m from network \e[32m$NETWORK\e[0m in project \e[32m$HOSTPROJECT_ID\e[0m with \e[32m$CHILDPROJECT_ID\e[0m...?"
+read -p "Press enter to continue, or ctrl-c to abort!" </dev/tty
+
+echo "Continuing..."
 echo "Getting Region of subnet $SUBNET"
 REGION=$(gcloud compute networks subnets list | grep $SUBNET | awk '{ print $2 }')
     if [ $? -ne 0 ]; then
@@ -186,13 +198,14 @@ gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
 
         #Handle K8s Service Account if -k
         if [ $K8S -ne 0 ]; then
-            echo "-k wasdetected, enabling Kubernetes access to shared VPC..."
-            gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \ #get k8s service account
+            echo "-k was detected, enabling Kubernetes access to shared VPC..."
+            #get k8s service account
+            gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
                 --filter="bindings.role=( 'roles/container.serviceagent' )" \
                 --format table"(bindings.role,bindings.members)" | grep @ | awk '{ print $2 }' | while read K8SACCT
                 do
-                    #gcloud beta compute networks subnets add-iam-policy-binding $SUBNET \
-                    #    --region=$REGION --member=$K8SACCT --role='roles/compute.networkUser'
+                    gcloud beta compute networks subnets add-iam-policy-binding $SUBNET \
+                        --region=$REGION --member=$K8SACCT --role='roles/compute.networkUser'
                     if [ $? -ne 0 ]; then
                         echo "Failed to add user $K8SACCT"
                         ERROR=1 
