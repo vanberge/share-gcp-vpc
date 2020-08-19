@@ -21,6 +21,10 @@ Always make sure you have backups and have **validated** recovery from those bac
 * **-n `<network to share>`**: Name of the network in the host project that will be shared"
 * **-s `<subnet to share>`**: The specific subnet name you wish to share"
 
+### Optional flags
+* **-k**: Enables kubernetes integration for GKE to access the shared subnets
+* **-z**: Run the script in "ZOMG" mode, which bypasses all the preflight checks and will attempt to run as-is.  HIGHLY discouraged in production.
+
 ## Examples:
 ```
 ./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
