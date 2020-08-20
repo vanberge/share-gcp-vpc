@@ -59,6 +59,10 @@ SHOW_HELP() {
     echo "      <network to share>: Name of the network in the host project that will be shared"
     echo "      <subnet to share>: The specific subnet name you wish to share"
     echo " "
+    echo " Optional flags:"
+    echo "      -k: enable GKE access to the subnet"
+    echo "      -z: skip error checking and validation of inputs"
+    echo " "
     echo "  Examples:"
     echo "      ./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
 }
