@@ -27,8 +27,13 @@ Always make sure you have backups and have **validated** recovery from those bac
 
 ## Examples:
 ```
-./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet"    
+./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet    
    - This share the subnet 'app-project-subnet' with the my-app-project, allowing resources to connect to the shared-vpc-network
+
+./share-vpc.sh -h shared-svc-project -c my-app-project -n shared-vpc-network -s app-project-subnet -k -z    
+   - Same share as 1st example, but now we are running in 'ZOMG' mode (-z), where validation is skipped.
+   - Enabled GKE sharing with the -k flag, where GKE clusters in child project may now access the subnet 'app-project-subnet'
+
 ```
 
 ### Authors
