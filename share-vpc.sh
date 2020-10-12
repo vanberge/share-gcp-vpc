@@ -204,18 +204,24 @@ gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
         if [ $K8S -ne 0 ]; then
             echo "-k was detected, enabling Kubernetes access to shared VPC..."
             #get k8s service account
-            gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
-                --filter="bindings.role=( 'roles/container.serviceagent' )" \
-                --format table"(bindings.role,bindings.members)" | grep @ | awk '{ print $2 }' | while read K8SACCT
-                do
+            K8SACCT=$(gcloud projects get-iam-policy $CHILDPROJECT_ID --flatten="bindings[].members" \
+            --filter="bindings.role=( 'roles/container.serviceagent' )" \
+            --format table"(bindings.role,bindings.members)" | grep @ | awk '{ print $2 }')
+                if [ -z "$K8SACCT" ]; then
+                    echo "Not able to find Kubernetes service account"
+                    ERROR=1 
+                    ERRORMSG="Failed to add Kubernetes integration for $SUBNET - Is GKE API enabled?"
+                    ERROR_OUT
+                else      
+                    echo "Adding $K8SACCT to $SUBNET"
                     gcloud beta compute networks subnets add-iam-policy-binding $SUBNET \
-                        --region=$REGION --member=$K8SACCT --role='roles/compute.networkUser'
-                    if [ $? -ne 0 ]; then
-                        echo "Failed to add user $K8SACCT"
-                        ERROR=1 
-                        ERRORMSG="failed to add one or more members to IAM policy binding on $SUBNET"
-                    fi
-                done
+                    --region=$REGION --member=$K8SACCT --role='roles/compute.networkUser'
+                        if [ $? -ne 0 ]; then
+                            echo "failed Kubernetes service account $K8SACCT"
+                            ERROR=1 
+                            ERRORMSG="Failed to add Kubernetes integration for $SUBNET - Is GKE API enabled?"
+                        fi
+                fi
         fi
 
 #Done, so check error level and error out if so
