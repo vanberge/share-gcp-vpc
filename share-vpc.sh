@@ -90,14 +90,14 @@ CHECK_PROJECT() {
 # Check destination network to make sure it exists
 CHECK_NETWORK() {
     echo "Checking network $NETWORK"
-    gcloud compute networks list --project $HOSTPROJECT_ID | grep -w $NETWORK > /dev/null 2>&1
+    gcloud compute networks list | grep -w $NETWORK > /dev/null 2>&1
         if [ $? -ne 0 ]; then
             ERROR=1 
             ERRORMSG="ERRORS FOUND IN ARGUMENTS - Network '$NETWORK' not found, please check network name"
         fi
     
     echo "Checking subnet $SUBNET..."
-    gcloud compute networks subnets list | grep -iw ^$SUBNET. > /dev/null 2>&1
+    gcloud compute networks subnets list | grep -iw $SUBNET > /dev/null 2>&1
         if [ $? -ne 0 ]; then
             ERROR=1 
             ERRORMSG="ERRORS FOUND IN ARGUMENTS - Subnet '$SUBNET' not found, please check subnet name"
@@ -150,7 +150,7 @@ read -p "Press enter to continue, or ctrl-c to abort!" </dev/tty
 
 echo "Continuing..."
 echo "Getting Region of subnet $SUBNET"
-REGION=$(gcloud compute networks subnets list | grep -iw ^$SUBNET. | awk '{ print $2 }')
+REGION=$(gcloud compute networks subnets list --filter=subnet-01 | grep -iw REGION | awk '{print $2}')
     if [ $? -ne 0 ]; then
         ERROR=1 
         ERRORMSG="UNABLE TO GET REGION OF $SUBNET"
