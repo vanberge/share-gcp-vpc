@@ -150,7 +150,7 @@ read -p "Press enter to continue, or ctrl-c to abort!" </dev/tty
 
 echo "Continuing..."
 echo "Getting Region of subnet $SUBNET"
-REGION=$(gcloud compute networks subnets list --filter=subnet-01 | grep -iw REGION | awk '{print $2}')
+REGION=$(gcloud compute networks subnets list --filter=$SUBNET | grep -iw REGION | awk '{print $2}')
     if [ $? -ne 0 ]; then
         ERROR=1 
         ERRORMSG="UNABLE TO GET REGION OF $SUBNET"
