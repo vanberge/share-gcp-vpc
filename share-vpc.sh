@@ -105,18 +105,6 @@ CHECK_NETWORK() {
         fi 
 }
 
-#Verify all the things before proceeding!
-if [ $SAFEMODE -ne 0 ]; then
-    echo "Running pre-flight checks..."
-    COUNT_ARGS
-    CHECK_PROJECT "$HOSTPROJECT_ID" 
-    CHECK_PROJECT "$CHILDPROJECT_ID" 
-    CHECK_NETWORK 
-    echo "Validated command arguments..."
-    else 
-        echo "-z detected: Safe mode disabled, proceeding without pre-flight checks..."
-fi
-
 #Check that we're in the correct project to have CLI work appropriately.
 echo "Checking if we are already in the project..."
 CURRENTPROJECT=$(gcloud config list project | grep project | awk ' { print $3 } ')
@@ -130,6 +118,18 @@ if [ "$CURRENTPROJECT" != "$HOSTPROJECT_ID" ]; then
     fi
     else
         echo "Already in $HOSTPROJECT_ID, continuing!"
+fi
+
+#Verify all the things before proceeding!
+if [ $SAFEMODE -ne 0 ]; then
+    echo "Running pre-flight checks..."
+    COUNT_ARGS
+    CHECK_PROJECT "$HOSTPROJECT_ID" 
+    CHECK_PROJECT "$CHILDPROJECT_ID" 
+    CHECK_NETWORK 
+    echo "Validated command arguments..."
+    else 
+        echo "-z detected: Safe mode disabled, proceeding without pre-flight checks..."
 fi
 
 #Enable shared project host if not already
